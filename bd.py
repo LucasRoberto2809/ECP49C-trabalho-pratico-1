@@ -19,6 +19,23 @@ class Banco:
         self.conexao.commit()
         cursor.close()
         return id
+    
+    def modificar(self, album, novo_review, nova_nota):
+        cursor = self.conexao.cursor()
+        cursor.execute("""
+            UPDATE teste
+            SET review = ?, nota = ?
+            WHERE album = ?
+        """, (novo_review, nova_nota, album))
+        self.conexao.commit()
+        linhas_afetadas = cursor.rowcount
+        cursor.close()
+        if linhas_afetadas == 0:
+            print(f"Nenhum álbum com nome '{album}' encontrado.")
+        else:
+            print(f"Registro do álbum '{album}' atualizado com sucesso.")
+        return linhas_afetadas
+    
 
     def retorna_tudo(self):
         cursor = self.conexao.cursor()
@@ -26,3 +43,4 @@ class Banco:
         retorno = cursor.fetchall()
         cursor.close()
         return retorno
+    

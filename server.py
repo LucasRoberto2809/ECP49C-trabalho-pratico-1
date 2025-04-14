@@ -5,7 +5,7 @@ class CRUD:
     def __init__(self):
         self.banco = bd.Banco()
         self.escutador = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.escutador.bind(('',50001))
+        self.escutador.bind(('',50000))
 
     def esperarConexao(self):
         self.escutador.listen(1)
@@ -18,6 +18,9 @@ class CRUD:
     
     def ler_tudo(self):
         print(self.banco.retorna_tudo())
+
+    def modificar(self, album, review, nota):
+        id = self.banco.modificar(album, review, nota)
 
     def processarPedidos(self, socket_cliente:socket.socket):
         cliente_conectado = True
@@ -47,6 +50,20 @@ class CRUD:
                         nota = int.from_bytes(nota, 'big')
 
                         self.adicionar(album, banda, ano, review, nota)
+
+                    case 3:
+                        tam_album = socket_cliente.recv(1)
+                        tam_album = int.from_bytes(tam_album, 'big')
+                        album = socket_cliente.recv(tam_album).decode()
+
+                        tam_review = socket_cliente.recv(1)
+                        tam_review = int.from_bytes(tam_review, 'big')
+                        review = socket_cliente.recv(tam_review).decode()
+
+                        nota = socket_cliente.recv(1)
+                        nota = int.from_bytes(nota, 'big')
+                        
+                        self.modificar(album, review, nota)
 
 
 def main():

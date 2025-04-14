@@ -23,7 +23,7 @@ pelo album
 
 
 cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-cliente.connect(('127.0.0.1',50001))
+cliente.connect(('127.0.0.1',50000))
 
 opcao = None
 while opcao != 0:
@@ -43,6 +43,19 @@ while opcao != 0:
             msg = msg + len(album.encode()).to_bytes(1, 'big') + album.encode()
             msg = msg + len(banda.encode()).to_bytes(1, 'big') + banda.encode()
             msg = msg + ano.encode()
+            msg = msg + len(review.encode()).to_bytes(1, 'big') + review.encode()
+            msg = msg + nota.to_bytes(1, 'big')
+
+            id = cliente.send(msg)
+            print(id)
+
+        case 3:
+            album = input('Entre com o album que deseja mudar a review ')
+            review = input('Entre com a review para modificar ')
+            nota = int(input('Entre com a nota para modificar '))
+
+            msg = opcao.to_bytes(1, 'big')
+            msg = msg + len(album.encode()).to_bytes(1, 'big') + album.encode()
             msg = msg + len(review.encode()).to_bytes(1, 'big') + review.encode()
             msg = msg + nota.to_bytes(1, 'big')
 
