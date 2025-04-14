@@ -47,7 +47,6 @@ class CRUD:
                         nota = int.from_bytes(nota, 'big')
 
                         self.adicionar(album, banda, ano, review, nota)
-                        self.ler_tudo()
 
 
 def main():
