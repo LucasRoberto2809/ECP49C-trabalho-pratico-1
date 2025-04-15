@@ -22,6 +22,31 @@ class CRUD:
     def modificar(self, album, review, nota):
         id = self.banco.modificar(album, review, nota)
 
+    def envia_msg(self, socket_cliente:socket.socket, conteudo):
+        # lista tuplas: id, album, banda, ano, review, nota
+        num_linhas = len(conteudo)
+        msg = num_linhas.to_bytes(1, 'big')
+        id =  socket_cliente.send(msg)
+        #for linhas in conteudo:
+           # print(linhas)
+        for linhas in conteudo:
+            # para criar a mensagem o id é ignorado
+            msg = (len(linhas[1].encode()).to_bytes(1, 'big') + linhas[1].encode()
+                + len(linhas[2].encode()).to_bytes(1, 'big') + linhas[2].encode()
+                + linhas[3].encode()
+                + len(linhas[4].encode()).to_bytes(1, 'big') + linhas[4].encode()
+                + linhas[5].to_bytes(1, 'big'))
+            id =  socket_cliente.send(msg)
+    
+    def busca_banda(self, banda: str):
+       return self.banco.busca_por_banda(banda)
+
+    def busca_album(self, album: str):
+        return self.banco.busca_por_album(album)
+    
+    def remover(self, album: str) -> int:
+        return self.banco.deleta(album)
+
     def processarPedidos(self, socket_cliente:socket.socket):
         cliente_conectado = True
         while cliente_conectado:
@@ -50,6 +75,26 @@ class CRUD:
                         nota = int.from_bytes(nota, 'big')
 
                         self.adicionar(album, banda, ano, review, nota)
+                    
+                    case 2:
+                        cod_opc = int.from_bytes(socket_cliente.recv(1), 'big')
+                        print(f"Codigo: {cod_opc}")
+                        if cod_opc == 1: # retorna tudo
+                            conteudo = self.banco.retorna_tudo() 
+                            self.envia_msg(socket_cliente, conteudo)
+    
+                        elif cod_opc == 2: # busca por banda
+                            tam_banda = int.from_bytes(socket_cliente.recv(1), 'big')
+                            banda = socket_cliente.recv(tam_banda).decode()
+                            conteudo = self.busca_banda(banda)
+                            self.envia_msg(socket_cliente, conteudo)
+                            
+                        else: # busca por album
+                            tam_album = int.from_bytes(socket_cliente.recv(1), 'big')
+                            album = socket_cliente.recv(tam_album).decode()
+                            conteudo = self.busca_album(album)
+                            self.envia_msg(socket_cliente, conteudo)
+                        print("Busca realizada com sucesso")
 
                     case 3:
                         tam_album = socket_cliente.recv(1)
@@ -65,6 +110,13 @@ class CRUD:
                         
                         self.modificar(album, review, nota)
 
+                    case 4:
+                        tam_album = int.from_bytes(socket_cliente.recv(1), 'big')
+                        album = socket_cliente.recv(tam_album).decode()
+                        # envia resposta da operação para cliente
+                        resp = self.remover(album)
+                        msg = resp.to_bytes(1, 'big')
+                        socket_cliente.send(msg)
 
 def main():
     c = CRUD()

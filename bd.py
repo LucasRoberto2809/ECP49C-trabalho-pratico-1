@@ -36,7 +36,6 @@ class Banco:
             print(f"Registro do álbum '{album}' atualizado com sucesso.")
         return linhas_afetadas
     
-
     def retorna_tudo(self):
         cursor = self.conexao.cursor()
         cursor.execute('SELECT * FROM teste')
@@ -44,3 +43,29 @@ class Banco:
         cursor.close()
         return retorno
     
+    def busca_por_banda(self, banda: str):
+        cursor = self.conexao.cursor()
+        cursor.execute('SELECT * FROM teste WHERE banda = ?', (banda,))
+        retorno = cursor.fetchall()
+        cursor.close()
+        return retorno
+    
+    def busca_por_album(self, album: str):
+        cursor = self.conexao.cursor()
+        # LIKE por case-insensitive 
+        cursor.execute('SELECT * FROM teste WHERE album LIKE ?', (f'%{album}%',))
+        retorno = cursor.fetchall()
+        cursor.close()
+        return retorno
+    
+    def deleta(self, album: str):
+        cursor = self.conexao.cursor()
+        cursor.execute('DELETE FROM teste WHERE album LIKE ?', (f'%{album}%',))
+        self.conexao.commit()
+        linhas_afetadas = cursor.rowcount
+        cursor.close()
+        if linhas_afetadas == 0:
+            print(f"Nenhum álbum com nome '{album}' encontrado.")
+        else:
+            print(f"Album '{album}' removido com sucesso.")
+        return linhas_afetadas
